@@ -1,0 +1,20 @@
+{
+  "assignmentId": "LEF04",
+  "grading": {
+    "caseInsensitive": true,
+    "trim": true,
+    "ignorePunctuation": true,
+    "collapseWhitespace": true,
+    "typoTolerance": 1
+  },
+  "answers": [
+    { "index": 1, "accepted": ["bank"] },
+    { "index": 2, "accepted": ["shore", "beach"] },
+    { "index": 3, "accepted": ["pond"] },
+    { "index": 4, "accepted": ["coast"] },
+    { "index": 5, "accepted": ["coast"] },
+    { "index": 6, "accepted": ["lake"] },
+    { "index": 7, "accepted": ["ocean"] },
+    { "index": 8, "accepted": ["beach"] }
+  ]
+}
