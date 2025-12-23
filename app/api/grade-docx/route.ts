@@ -3,7 +3,7 @@ export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
-    const { gradeDocx } = await import("../../../grade-docx"); // <-- dynamisch
+    const { gradeDocx } = await import("../../../grade-docx.ts");
 
     const form = await req.formData();
     const file = form.get("file");
