@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ILS Auto-Korrektur (MVP)</title>
+  <style>
+    :root{--bg:#0b1220;--card:#0f1b34;--muted:#9fb0d0;--txt:#eef3ff;--border:rgba(255,255,255,.12);--ok:#35d07f;--bad:#ff5f6d;--warn:#ffd166}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:radial-gradient(1200px 600px at 20% 0%,rgba(66,153,225,.18),transparent 60%),radial-gradient(900px 500px at 80% 10%,rgba(72,187,120,.16),transparent 60%),var(--bg);color:var(--txt)}
+    .wrap{max-width:1100px;margin:48px auto;padding:16px}
+    h1{font-size:32px;margin:0 0 8px 0}
+    .sub{color:var(--muted);margin:0 0 24px 0}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid var(--border);border-radius:18px;padding:18px;margin:14px 0}
+    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    input[type="file"]{color:var(--muted)}
+    button{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--txt);padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
+    button:hover{background:rgba(255,255,255,.10)}
+    button:disabled{opacity:.5;cursor:not-allowed}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
+    .field{display:flex;flex-direction:column;gap:6px}
+    .label{font-weight:700}
+    textarea, input[type="text"]{width:100%;background:rgba(0,0,0,.20);border:1px solid var(--border);color:var(--txt);border-radius:12px;padding:10px 12px;font-size:14px}
+    textarea{min-height:92px;resize:vertical}
+    .hint{font-size:12px;color:var(--muted)}
+    .status{margin-top:10px;font-size:14px;color:var(--muted)}
+    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);font-weight:700}
+    .ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
+    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px;border:1px solid var(--border)}
+    th,td{padding:10px 12px;border-top:1px solid var(--border);text-align:left}
+    th{background:rgba(0,0,0,.25)}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>ILS Auto-Korrektur (MVP)</h1>
+    <p class="sub">Upload einer Word-Einsendeaufgabe (.docx) → Antworten werden in die Aufgabenfelder gezogen → korrigieren → PDF.</p>
+
+    <div class="card">
+      <div class="row">
+        <input id="file" type="file" accept=".docx" />
+        <button id="btnFill">1) Aus Word einfüllen</button>
+        <button id="btnGrade" disabled>2) Korrigieren</button>
+        <button id="btnPdf" disabled>3) PDF generieren</button>
+      </div>
+      <div class="status" id="status">Bereit.</div>
+    </div>
+
+    <div class="card">
+      <h2 style="margin:0 0 12px 0;font-size:18px">Aufgabenfelder (LEF04 – Start)</h2>
+      <p class="hint">Im MVP mappen wir Antwort #1 → Feld 1, Antwort #2 → Feld 2 usw. (Das verfeinern wir danach pro Aufgabe/Teilaufgabe.)</p>
+
+      <div class="grid" id="fields">
+        <div class="field">
+          <div class="label">1) Antwort</div>
+          <input type="text" id="a1" placeholder="Wird aus Word gezogen…" />
+        </div>
+        <div class="field">
+          <div class="label">2) Antwort</div>
+          <input type="text" id="a2" placeholder="Wird aus Word gezogen…" />
+        </div>
+        <div class="field">
+          <div class="label">3) Antwort</div>
+          <input type="text" id="a3" placeholder="Wird aus Word gezogen…" />
+        </div>
+        <div class="field">
+          <div class="label">4) Antwort</div>
+          <input type="text" id="a4" placeholder="Wird aus Word gezogen…" />
+        </div>
+        <div class="field">
+          <div class="label">5) Antwort</div>
+          <input type="text" id="a5" placeholder="Wird aus Word gezogen…" />
+        </div>
+        <div class="field">
+          <div class="label">6) Antwort</div>
+          <input type="text" id="a6" placeholder="Wird aus Word gezogen…" />
+        </div>
+        <div class="field">
+          <div class="label">7) Antwort</div>
+          <input type="text" id="a7" placeholder="Wird aus Word gezogen…" />
+        </div>
+        <div class="field">
+          <div class="label">8) Antwort</div>
+          <input type="text" id="a8" placeholder="Wird aus Word gezogen…" />
+        </div>
+      </div>
+    </div>
+
+    <div class="card" id="resultCard" style="display:none">
+      <div class="row" style="justify-content:space-between">
+        <h2 style="margin:0;font-size:18px">Korrektur-Ergebnis</h2>
+        <div class="pill" id="sumPill">—</div>
+      </div>
+      <div style="margin-top:12px;overflow:auto">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Schülerantwort</th>
+              <th>Soll</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  const status = (t) => { $("status").textContent = t; };
+
+  let extracted = []; // [{index,text}]
+  let graded = null;  // server response
+
+  function setField(i, val){
+    const el = document.getElementById("a"+i);
+    if(el) el.value = val || "";
+  }
+
+  function collectFields(){
+    const arr = [];
+    for(let i=1;i<=8;i++){
+      arr.push({ index:i, text: document.getElementById("a"+i).value || "" });
+    }
+    return arr;
+  }
+
+  async function postForm(url, file){
+    const fd = new FormData();
+    fd.append("file", file);
+    const res = await fetch(url, { method:"POST", body: fd });
+    const json = await res.json().catch(()=>({}));
+    if(!res.ok) throw new Error(json.error || ("HTTP "+res.status));
+    return json;
+  }
+
+  $("btnFill").onclick = async () => {
+    const f = $("file").files?.[0];
+    if(!f){ status("Bitte .docx auswählen."); return; }
+    status("Extrahiere Antworten aus Word…");
+    try{
+      const json = await postForm("/api/extract", f);
+      extracted = json.extracted || [];
+      for(let i=1;i<=8;i++){
+        const hit = extracted.find(x=>x.index===i);
+        setField(i, hit ? hit.text : "");
+      }
+      $("btnGrade").disabled = false;
+      status("Felder wurden befüllt. Du kannst jetzt korrigieren.");
+    }catch(e){
+      status("Fehler: "+e.message);
+    }
+  };
+
+  $("btnGrade").onclick = async () => {
+    const f = $("file").files?.[0];
+    if(!f){ status("Bitte .docx auswählen."); return; }
+    status("Korrigiere…");
+    try{
+      const json = await postForm("/api/grade", f);
+      graded = json;
+      renderResult(json);
+      $("btnPdf").disabled = false;
+      status("Korrektur fertig.");
+    }catch(e){
+      status("Fehler: "+e.message);
+    }
+  };
+
+  function renderResult(json){
+    const rows = json.graded || [];
+    $("resultCard").style.display = "block";
+    $("tbody").innerHTML = rows.map(r=>{
+      const st = r.correct ? (r.reason==="typo" ? "✅ Tippfehler" : "✅ korrekt") : (r.reason==="missing" ? "⚠️ fehlt" : "❌ falsch");
+      const cls = r.correct ? "ok" : (r.reason==="missing" ? "warn" : "bad");
+      return `<tr>
+        <td>${r.index}</td>
+        <td>${escapeHtml(r.student||"")}</td>
+        <td>${escapeHtml((r.expected||[]).join(" | "))}</td>
+        <td class="${cls}"><b>${st}</b></td>
+      </tr>`;
+    }).join("");
+
+    const s = json.summary || {correct:0,wrong:0,missing:0,total:0};
+    $("sumPill").textContent = `${s.correct}✅ / ${s.wrong}❌ / ${s.missing}⚠️ (Total ${s.total})`;
+  }
+
+  function escapeHtml(str){
+    return (str||"").replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
+  }
+
+  $("btnPdf").onclick = async () => {
+    alert("PDF kommt als nächster Schritt. Erst stabil Extract + Grade live machen.");
+  };
+</script>
+</body>
+</html>
