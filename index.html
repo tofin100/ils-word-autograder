@@ -3,249 +3,706 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ILS – Einsendeaufgabe LEF04 XS (Auto-Korrektur)</title>
+  <title>AutoGrader – LEF04 XS05 (MVP 13.1)</title>
+
   <style>
     :root{
-      --bg:#0b1220; --card:#0f1b34; --txt:#eef3ff; --muted:#9fb0d0;
-      --border:rgba(255,255,255,.12); --accent:#7dd3fc;
+      --bg:#070b14;
+      --panel:rgba(255,255,255,.06);
+      --panel2:rgba(255,255,255,.04);
+      --border:rgba(255,255,255,.12);
+      --text:#eef3ff;
+      --muted:#9fb0d0;
+      --accent:#7dd3fc;
+      --accent2:#a78bfa;
+      --good:#34d399;
+      --bad:#fb7185;
+      --warn:#fbbf24;
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
     }
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--txt)}
-    .wrap{max-width:1100px;margin:40px auto;padding:16px}
-    h1{margin:0 0 8px 0;font-size:28px}
-    .sub{margin:0 0 22px 0;color:var(--muted)}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
-      border:1px solid var(--border); border-radius:18px; padding:18px; margin:14px 0}
-    .topbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
-    .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-weight:700}
-    .btn{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--txt);
-      padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(900px 520px at 15% 0%, rgba(125,211,252,.14), transparent 55%),
+        radial-gradient(900px 520px at 85% 10%, rgba(167,139,250,.12), transparent 55%),
+        var(--bg);
+      color:var(--text);
+    }
+    .wrap{max-width:1040px; margin:42px auto; padding:18px}
+    .hero{
+      border:1px solid var(--border);
+      border-radius:22px;
+      background: linear-gradient(180deg, var(--panel), var(--panel2));
+      box-shadow: var(--shadow);
+      padding:22px;
+      margin-bottom:14px;
+    }
+    .brand{display:flex; justify-content:space-between; align-items:flex-start; gap:18px; flex-wrap:wrap}
+    h1{margin:0; font-size:28px; letter-spacing:.2px}
+    .sub{margin:8px 0 0 0; color:var(--muted); line-height:1.45}
+    .pill{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:8px 12px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.18);
+      color:var(--muted);
+      font-weight:900;
+      white-space:nowrap;
+    }
+    .toolbar{
+      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
+      margin-top:14px; padding-top:14px; border-top:1px solid var(--border);
+    }
+    .btn{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.06);
+      color:var(--text);
+      padding:10px 14px;
+      border-radius:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
     .btn:hover{background:rgba(255,255,255,.10)}
     input[type="file"]{color:var(--muted)}
-    .secTitle{display:flex;justify-content:space-between;gap:10px;align-items:flex-end}
-    .secTitle h2{margin:0;font-size:18px}
-    .hint{margin:8px 0 0 0;color:var(--muted);font-size:13px}
-    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
-    @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
-    .field{display:flex;flex-direction:column;gap:6px}
-    .label{font-weight:800}
-    .meta{font-size:12px;color:var(--muted)}
-    input[type="text"], textarea{
-      width:100%; background:rgba(0,0,0,.22); border:1px solid var(--border);
-      color:var(--txt); border-radius:12px; padding:10px 12px; font-size:14px
+    .hint{color:var(--muted); font-size:13px; margin-top:10px; line-height:1.45}
+    .grid2{display:grid; grid-template-columns:1fr; gap:12px; margin-top:14px}
+    @media(min-width:860px){ .grid2{grid-template-columns:1fr 1fr} }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:18px;
+      background:rgba(0,0,0,.18);
+      padding:16px;
     }
-    textarea{min-height:90px;resize:vertical}
-    .hr{height:1px;background:var(--border);margin:16px 0}
-    .accent{color:var(--accent);font-weight:900}
+    .card h2{margin:0 0 10px 0; font-size:16px}
+    .row{display:grid; grid-template-columns:1fr; gap:10px}
+    @media(min-width:860px){ .row{grid-template-columns:1fr 1fr 1fr} }
+
+    label{font-size:12px; color:var(--muted); font-weight:900; display:block; margin-bottom:6px}
+    input[type="text"]{
+      width:100%;
+      background:rgba(255,255,255,.03);
+      border:1px solid var(--border);
+      color:var(--text);
+      border-radius:12px;
+      padding:10px 12px;
+      font-size:14px;
+      outline:none;
+    }
+
+    .section{
+      margin:14px 0;
+      border:1px solid var(--border);
+      border-radius:22px;
+      background: linear-gradient(180deg, rgba(255,255,255,.055), rgba(255,255,255,.03));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .secHead{
+      padding:18px 18px 14px 18px;
+      border-bottom:1px solid var(--border);
+      display:flex; justify-content:space-between; align-items:flex-end; gap:14px; flex-wrap:wrap;
+    }
+    .secHead h2{margin:0; font-size:18px}
+    .secMeta{color:var(--muted); font-size:13px}
+    .badge{
+      display:inline-flex; align-items:center; gap:8px;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.16);
+      color:var(--muted);
+      font-weight:900;
+    }
+    .content{padding:18px}
+    .small{font-size:12px; color:var(--muted); margin:10px 0 0 0; line-height:1.5}
+
+    .items{display:grid; grid-template-columns:1fr; gap:12px}
+    @media(min-width:940px){ .items{grid-template-columns:1fr 1fr} }
+
+    .item{
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:14px;
+      background:rgba(0,0,0,.16);
+    }
+    .num{font-weight:1000; color:var(--accent)}
+    .prompt{margin:8px 0 0 0; line-height:1.5; color:rgba(238,243,255,.92)}
+    .field{margin-top:10px}
+    .resultBox{
+      margin-top:12px;
+      padding:12px;
+      border-radius:14px;
+      border:1px solid var(--border);
+      background:rgba(0,0,0,.16);
+    }
+    .statline{display:flex; gap:12px; flex-wrap:wrap; align-items:center}
+    .dot{width:10px; height:10px; border-radius:999px; background:var(--muted); display:inline-block}
+    .ok{background:var(--good)}
+    .no{background:var(--bad)}
+    .warn{background:var(--warn)}
+
+    table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      margin-top:10px;
+      overflow:hidden;
+      border-radius:14px;
+      border:1px solid var(--border);
+    }
+    th,td{
+      text-align:left;
+      padding:10px 10px;
+      font-size:13px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+    }
+    th{color:var(--muted); font-weight:900; background:rgba(255,255,255,.03)}
+    tr:last-child td{border-bottom:none}
+    .chip{
+      display:inline-flex;
+      padding:4px 8px;
+      border-radius:999px;
+      border:1px solid var(--border);
+      font-weight:900;
+      font-size:12px;
+      background:rgba(255,255,255,.04);
+    }
+    .chip.good{color:var(--good)}
+    .chip.bad{color:var(--bad)}
+    .footer{margin:18px 0 34px 0; color:var(--muted); font-size:12px; text-align:center; opacity:.9}
+    .accent{color:var(--accent); font-weight:1000}
+    .accent2{color:var(--accent2); font-weight:1000}
+
+    pre#debug{
+      white-space:pre-wrap;
+      background:rgba(0,0,0,.35);
+      border:1px solid var(--border);
+      padding:12px;
+      border-radius:14px;
+      color:var(--muted);
+      font-size:12px;
+      margin-top:12px;
+      display:none;
+    }
+    .toggleDbg{margin-left:auto}
   </style>
 </head>
+
 <body>
   <div class="wrap">
-    <h1>ILS Auto-Korrektur – LEF04 XS</h1>
-    <p class="sub">Alle Aufgaben untereinander. Felder sind leer. Später füllen wir sie per Upload automatisch (blaue Schülerantworten → passende Felder).</p>
 
-    <div class="card">
-      <div class="topbar">
-        <span class="pill">Schritt 1: Index/Formular</span>
-        <input id="docx" type="file" accept=".docx" />
-        <button class="btn" id="btnFill" type="button">Aus Word einfüllen (später)</button>
-        <button class="btn" id="btnGrade" type="button">Korrigieren (später)</button>
-        <button class="btn" id="btnPdf" type="button">PDF generieren (später)</button>
+    <div class="hero">
+      <div class="brand">
+        <div>
+          <h1>AutoGrader <span class="accent">LEF04</span> · MVP <span class="accent2">Aufgabe 13.1</span></h1>
+          <p class="sub">
+            Statischer MVP: <b>Word (.docx) Upload</b> → blaue Schülerantworten einziehen → <b>korrigieren</b> gegen Musterlösung → <b>PDF erzeugen</b>.
+          </p>
+        </div>
+        <div class="pill" id="statusPill">Status: bereit</div>
       </div>
-      <p class="hint">Hinweis: Buttons sind Platzhalter. In Schritt 2 bauen wir die Upload-Logik, die die Felder befüllt.</p>
-    </div>
 
-    <!-- 13.1 -->
-    <div class="card">
-      <div class="secTitle">
-        <h2>13.1 – Progress test Lektion 13</h2>
-        <span class="pill">Wörter einsetzen</span>
+      <div class="toolbar">
+        <input type="file" id="docx" accept=".docx" />
+        <button class="btn" id="btnFill" type="button">Aus Word einziehen</button>
+        <button class="btn" id="btnGrade" type="button">Korrigieren</button>
+        <button class="btn" id="btnPDF" type="button">PDF generieren</button>
+
+        <button class="btn toggleDbg" id="btnDbg" type="button">Debug anzeigen</button>
       </div>
-      <p class="hint">Wortliste: beach – coast – lake – ocean – pond – sea – shore – bank  [oai_citation:1‡Einsendeaufgaben%20Englisch%20Schriftlich%201%20pdf.docx](sediment://file_000000004c9471f58bf8b9cd51d4c604)</p>
 
-      <div class="grid">
-        <div class="field">
-          <div class="label">13.1 (1)</div>
-          <div class="meta">The boys were sitting on the river ___ fishing.</div>
-          <input type="text" data-fill="1" placeholder="Antwort" />
+      <div class="hint" id="statusHint">
+        <b>Hinweis:</b> Wenn “Aus Word einziehen” 0 Antworten findet, ist in der DOCX evtl. keine echte Blau-Farbe im XML (ThemeColor etc.). Dann sehen wir das im Debug.
+      </div>
+
+      <pre id="debug"></pre>
+
+      <div class="grid2">
+        <div class="card">
+          <h2>Schülerdaten (aus DOCX header später automatisch) – jetzt manuell</h2>
+          <div class="row">
+            <div>
+              <label>Vorname</label>
+              <input id="firstName" type="text" placeholder="z.B. Celina Sophie" />
+            </div>
+            <div>
+              <label>Name</label>
+              <input id="lastName" type="text" placeholder="z.B. Sander" />
+            </div>
+            <div>
+              <label>Studien-Nr.</label>
+              <input id="studentNr" type="text" placeholder="z.B. 1137685" />
+            </div>
+          </div>
+          <div class="small">Fürs PDF nehmen wir diese Werte. (Header-Parsing aus DOCX kommt später.)</div>
         </div>
-        <div class="field">
-          <div class="label">13.1 (2)</div>
-          <div class="meta">She swam to the ___ and lay down on the ___ to regain her strength.</div>
-          <input type="text" data-fill="2" placeholder="Antwort(en)" />
-        </div>
-        <div class="field">
-          <div class="label">13.1 (3)</div>
-          <div class="meta">He will build a fish ___ in his garden.</div>
-          <input type="text" data-fill="3" placeholder="Antwort" />
-        </div>
-        <div class="field">
-          <div class="label">13.1 (4)</div>
-          <div class="meta">They have bought a house by the ___.</div>
-          <input type="text" data-fill="4" placeholder="Antwort" />
-        </div>
-        <div class="field">
-          <div class="label">13.1 (5)</div>
-          <div class="meta">Dover ___ is famous for its white cliffs.</div>
-          <input type="text" data-fill="5" placeholder="Antwort" />
-        </div>
-        <div class="field">
-          <div class="label">13.1 (6)</div>
-          <div class="meta">In their holidays they always go to lake Constance. (hier steht in der Datei ein Wort)</div>
-          <input type="text" data-fill="6" placeholder="Antwort" />
-        </div>
-        <div class="field">
-          <div class="label">13.1 (7)</div>
-          <div class="meta">He crossed the ___ in a sailing ship.</div>
-          <input type="text" data-fill="7" placeholder="Antwort" />
-        </div>
-        <div class="field">
-          <div class="label">13.1 (8)</div>
-          <div class="meta">They were building sandcastles on the ___.</div>
-          <input type="text" data-fill="8" placeholder="Antwort" />
+
+        <div class="card">
+          <h2>Musterlösung 13.1 (korrekt)</h2>
+          <div class="small">
+            a) BANK · b) SHORE + BEACH · c) POND · d) COAST · e) COAST · f) LAKE · g) OCEAN · h) BEACH
+          </div>
+          <div class="small">
+            Wir prüfen case-insensitive, trimmen Leerzeichen und erlauben bei (b) zwei Wörter in beliebiger Trennung (z.B. “shore beach”, “shore, beach”).
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- 13.2 -->
-    <div class="card">
-      <div class="secTitle">
-        <h2>13.2 – Past Tense (Rewrite)</h2>
-        <span class="pill">Sätze umschreiben</span>
+    <section class="section" id="s131">
+      <div class="secHead">
+        <div>
+          <h2>13.1 – Progress test (Lektion 13)</h2>
+          <div class="secMeta">Use one of the following words to complete the sentences.</div>
+        </div>
+        <div class="badge">Wörter einsetzen</div>
       </div>
-      <p class="hint">Rewrite the following sentences, putting them in the past tense.  [oai_citation:2‡Einsendeaufgaben%20Englisch%20Schriftlich%201%20pdf.docx](sediment://file_000000004c9471f58bf8b9cd51d4c604)</p>
+      <div class="content">
+        <div class="small">
+          Wortliste: beach – coast – lake – ocean – pond – sea – shore – bank
+        </div>
 
-      <div class="grid">
-        <div class="field">
-          <div class="label">13.2 a)</div>
-          <div class="meta">He never falls when she leads the way.</div>
-          <input type="text" data-fill="9" placeholder="Vergangenheitssatz" />
+        <div class="items">
+          <div class="item">
+            <div class="num">13.1 (a)</div>
+            <p class="prompt">The boys were sitting on the river ___ fishing.</p>
+            <div class="field">
+              <label>Antwort</label>
+              <input data-fill="1" id="a1" type="text" placeholder="leer" />
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="num">13.1 (b)</div>
+            <p class="prompt">She swam to the ___ and lay down on the ___ to regain her strength.</p>
+            <div class="field">
+              <label>Antwort(en)</label>
+              <input data-fill="2" id="a2" type="text" placeholder="leer (2 Wörter: SHORE + BEACH)" />
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="num">13.1 (c)</div>
+            <p class="prompt">He will build a fish ___ in his garden.</p>
+            <div class="field">
+              <label>Antwort</label>
+              <input data-fill="3" id="a3" type="text" placeholder="leer" />
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="num">13.1 (d)</div>
+            <p class="prompt">They have bought a house by the ___.</p>
+            <div class="field">
+              <label>Antwort</label>
+              <input data-fill="4" id="a4" type="text" placeholder="leer" />
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="num">13.1 (e)</div>
+            <p class="prompt">Dover ___ is famous for its white cliffs.</p>
+            <div class="field">
+              <label>Antwort</label>
+              <input data-fill="5" id="a5" type="text" placeholder="leer" />
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="num">13.1 (f)</div>
+            <p class="prompt">In their holidays they always go to ___ Constance.</p>
+            <div class="field">
+              <label>Antwort</label>
+              <input data-fill="6" id="a6" type="text" placeholder="leer" />
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="num">13.1 (g)</div>
+            <p class="prompt">He crossed the ___ in a sailing ship.</p>
+            <div class="field">
+              <label>Antwort</label>
+              <input data-fill="7" id="a7" type="text" placeholder="leer" />
+            </div>
+          </div>
+
+          <div class="item">
+            <div class="num">13.1 (h)</div>
+            <p class="prompt">They were building sandcastles on the ___.</p>
+            <div class="field">
+              <label>Antwort</label>
+              <input data-fill="8" id="a8" type="text" placeholder="leer" />
+            </div>
+          </div>
         </div>
-        <div class="field">
-          <div class="label">13.2 (weiterer Satz)</div>
-          <div class="meta">She eats a steak and drinks a pint of beer.</div>
-          <input type="text" data-fill="10" placeholder="Vergangenheitssatz" />
+
+        <div class="resultBox" id="resultBox">
+          <div class="statline">
+            <span class="dot warn" id="dotState"></span>
+            <b id="resultHeadline">Noch nicht korrigiert.</b>
+            <span class="chip" id="scoreChip">0/8</span>
+          </div>
+          <div id="resultTableWrap"></div>
         </div>
-        <div class="field">
-          <div class="label">13.2 (weiterer Satz)</div>
-          <div class="meta">When we come in, she goes out of the room.</div>
-          <input type="text" data-fill="11" placeholder="Vergangenheitssatz" />
-        </div>
-        <div class="field">
-          <div class="label">13.2 (weiterer Satz)</div>
-          <div class="meta">The curtain rises again, the actors appear on stage, bow and file off.</div>
-          <input type="text" data-fill="12" placeholder="Vergangenheitssatz" />
-        </div>
-        <div class="field">
-          <div class="label">13.2 (weiterer Satz)</div>
-          <div class="meta">These boys say that they always listen carefully, but do not understand their teachers.</div>
-          <input type="text" data-fill="13" placeholder="Vergangenheitssatz" />
-        </div>
-        <div class="field">
-          <div class="label">13.2 (weiterer Satz)</div>
-          <div class="meta">If students read their homework carefully, they will find many mistakes themselves.</div>
-          <input type="text" data-fill="14" placeholder="Vergangenheitssatz" />
-        </div>
+
       </div>
+    </section>
+
+    <div class="footer">
+      MVP: 13.1 · statisch · Word → korrigieren → PDF
     </div>
 
-    <!-- 13.3 -->
-    <div class="card">
-      <div class="secTitle">
-        <h2>13.3 – Translate (Verb + object + to-infinitive)</h2>
-        <span class="pill">Übersetzen</span>
-      </div>
-      <p class="hint">Translate the following sentences, using one of these verbs (advise/allow/persuade/encourage/urge/force/cause/invite/forbid/order/want/warn/remind).  [oai_citation:3‡Einsendeaufgaben%20Englisch%20Schriftlich%201%20pdf.docx](sediment://file_000000004c9471f58bf8b9cd51d4c604)</p>
-
-      <div class="grid">
-        <div class="field"><div class="label">13.3 a)</div><div class="meta">Erlaubten sie Ihnen, Ihr Auto vor ihrem Haus zu parken?</div><textarea data-fill="15" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 b)</div><div class="meta">Es war jedem verboten, in diesen Räumen zu rauchen.</div><textarea data-fill="16" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 c)</div><div class="meta">Der Trainer wollte, dass alle seine Spieler am Konditionstraining teilnehmen.</div><textarea data-fill="17" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 d)</div><div class="meta">Das schlechte Wetter sorgte dafür, dass wir unsere Reise verschieben mussten.</div><textarea data-fill="18" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 e)</div><div class="meta">Der Arzt riet ihr, wegen ihres Fiebers im Haus zu bleiben.</div><textarea data-fill="19" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 f)</div><div class="meta">Der Polizist zwang sie, ihre Koffer zu öffnen.</div><textarea data-fill="20" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 g)</div><div class="meta">Stets ermutigte er mich, mein Studium fortzusetzen.</div><textarea data-fill="21" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 h)</div><div class="meta">Der Manager bat seine Mitarbeiter eindringlich, sich mehr anzustrengen.</div><textarea data-fill="22" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 i)</div><div class="meta">Der Vorstand hat mich eingeladen, einen Bericht über die Gewinne zu geben.</div><textarea data-fill="23" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 j)</div><div class="meta">Zum Schluss hat er sie überzeugt, seinen Vorschlag anzunehmen.</div><textarea data-fill="24" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 k)</div><div class="meta">Der Offizier befahl dem Soldat, auf den Feind zu schießen.</div><textarea data-fill="25" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 l)</div><div class="meta">Ich habe dich oft genug gewarnt, dein Fahrrad abzuschließen.</div><textarea data-fill="26" placeholder="Übersetzung"></textarea></div>
-        <div class="field"><div class="label">13.3 m)</div><div class="meta">Hast du John daran erinnert, das Paket zu verschicken?</div><textarea data-fill="27" placeholder="Übersetzung"></textarea></div>
-      </div>
-    </div>
-
-    <!-- Kurz: 14.1 / 14.2 / 15.1 / 15.2 / 15.3 / 16.1 / 16.2 / 16.3 / 16.4 -->
-    <div class="card">
-      <div class="secTitle">
-        <h2>Weitere Teile (14–16)</h2>
-        <span class="pill">als Felder vorbereitet</span>
-      </div>
-      <p class="hint">Damit die Index-Seite “fertig untereinander” ist, legen wir die restlichen Aufgaben als große Felder an. Fein-Granular (pro Satz) machen wir danach.</p>
-
-      <div class="field">
-        <div class="label">14.1 – Singular/Plural (Antworten)</div>
-        <textarea data-fill="28" placeholder="Alle Antworten zu 14.1 (zeilenweise)"></textarea>
-      </div>
-
-      <div class="field">
-        <div class="label">14.2 – much/many, few/a few, little/a little</div>
-        <textarea data-fill="29" placeholder="Alle Antworten zu 14.2 (zeilenweise)"></textarea>
-      </div>
-
-      <div class="field">
-        <div class="label">15.1 – Verbformen (Multiple Choice / Einsetzen)</div>
-        <textarea data-fill="30" placeholder="Alle Antworten zu 15.1 (zeilenweise)"></textarea>
-      </div>
-
-      <div class="field">
-        <div class="label">15.2 – Translate (Sätze)</div>
-        <textarea data-fill="31" placeholder="Alle Antworten zu 15.2 (zeilenweise)"></textarea>
-      </div>
-
-      <div class="field">
-        <div class="label">15.3 – Essay (ca. 300 Wörter)</div>
-        <textarea data-fill="32" placeholder="Essay-Text der Schülerin"></textarea>
-      </div>
-
-      <div class="field">
-        <div class="label">16.1 – had better / would rather</div>
-        <textarea data-fill="33" placeholder="Alle Antworten zu 16.1 (zeilenweise)"></textarea>
-      </div>
-
-      <div class="field">
-        <div class="label">16.2 – What will you do if ...?</div>
-        <textarea data-fill="34" placeholder="Alle Antworten zu 16.2 (zeilenweise)"></textarea>
-      </div>
-
-      <div class="field">
-        <div class="label">16.3 – What would you do/have done if ...?</div>
-        <textarea data-fill="35" placeholder="Alle Antworten zu 16.3 (zeilenweise)"></textarea>
-      </div>
-
-      <div class="field">
-        <div class="label">16.4 – Translate</div>
-        <textarea data-fill="36" placeholder="Alle Antworten zu 16.4 (zeilenweise)"></textarea>
-      </div>
-    </div>
   </div>
 
+  <!-- Libs -->
+  <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+
   <script>
-    // Schritt 2: hier kommt später das Mapping aus der Word-Datei rein.
-    // Wir lassen das bewusst schon vorbereitet:
-    function fillFieldsFromExtracted(extractedArray) {
-      // extractedArray = [{ index: 1, text: "..." }, ...]
-      const byIdx = new Map(extractedArray.map(x => [x.index, x.text]));
-      document.querySelectorAll("[data-fill]").forEach(el => {
-        const i = Number(el.getAttribute("data-fill"));
-        if (byIdx.has(i)) el.value = byIdx.get(i);
-      });
+    // ----------------------------
+    // UI helpers
+    // ----------------------------
+    const $ = (q) => document.querySelector(q);
+
+    const debugEl = $("#debug");
+    let debugOn = false;
+    $("#btnDbg").onclick = () => {
+      debugOn = !debugOn;
+      debugEl.style.display = debugOn ? "block" : "none";
+      $("#btnDbg").textContent = debugOn ? "Debug ausblenden" : "Debug anzeigen";
+    };
+
+    function setStatus(text){
+      $("#statusPill").textContent = "Status: " + text;
+      $("#statusHint").innerHTML = "<b>Status:</b> " + text;
+      if(debugOn) console.log("[STATUS]", text);
+    }
+    function setDebug(obj){
+      if(!debugOn) return;
+      debugEl.textContent = typeof obj === "string" ? obj : JSON.stringify(obj, null, 2);
     }
 
-    // Placeholder Buttons:
-    document.getElementById("btnFill").onclick = () => {
-      alert("Schritt 2: Upload/Extraktion kommt als nächstes. Index ist jetzt fertig aufgebaut.");
+    // ----------------------------
+    // Musterlösung 13.1 (korrekt)
+    // ----------------------------
+    const SOL_13_1 = [
+      ["BANK"],                 // a
+      ["SHORE","BEACH"],         // b (2 Wörter)
+      ["POND"],                 // c
+      ["COAST"],                // d
+      ["COAST"],                // e
+      ["LAKE"],                 // f
+      ["OCEAN"],                // g
+      ["BEACH"]                 // h
+    ];
+
+    // Normalize student input
+    function normalizeWord(s){
+      return (s||"")
+        .toString()
+        .replace(/\u00A0/g," ")
+        .trim()
+        .toUpperCase();
+    }
+
+    function splitWords(s){
+      // allow separators: space, comma, semicolon, slash
+      return normalizeWord(s)
+        .replace(/[;,/]+/g," ")
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    // ----------------------------
+    // DOCX blue extract (robust)
+    // ----------------------------
+    async function extractBlueAnswersFromDocx(file){
+      const buffer = await file.arrayBuffer();
+      const zip = await JSZip.loadAsync(buffer);
+
+      const docFile = zip.file("word/document.xml");
+      if(!docFile) throw new Error("word/document.xml fehlt – ist das wirklich .docx?");
+      const xml = await docFile.async("string");
+
+      const doc = new DOMParser().parseFromString(xml, "text/xml");
+      const parseError = doc.getElementsByTagName("parsererror")[0];
+      if(parseError) throw new Error("DOCX XML parse error");
+
+      // Known blues + theme colors
+      const BLUE_HEX = new Set(["0000FF","0070C0","2F75B5","1F4E79","2E74B5","305496","3366FF"]);
+      const BLUE_THEME = new Set(["ACCENT1","ACCENT2","HYPERLINK","FOLLOWEDHYPERLINK"]);
+
+      function runIsBlue(run){
+        const rPr = run.getElementsByTagName("w:rPr")[0];
+        if(!rPr) return false;
+        const color = rPr.getElementsByTagName("w:color")[0];
+        if(!color) return false;
+
+        const val = (color.getAttribute("w:val") || color.getAttribute("val") || "")
+          .toUpperCase().replace("#","");
+        const theme = (color.getAttribute("w:themeColor") || color.getAttribute("themeColor") || "")
+          .toUpperCase();
+
+        if(val && BLUE_HEX.has(val)) return true;
+        if(theme && BLUE_THEME.has(theme)) return true;
+
+        return false;
+      }
+
+      function runText(run){
+        return Array.from(run.getElementsByTagName("w:t"))
+          .map(t => t.textContent || "")
+          .join("");
+      }
+
+      const runs = Array.from(doc.getElementsByTagName("w:r"));
+
+      const raw = [];
+      let cur = "";
+
+      for(const r of runs){
+        if(runIsBlue(r)){
+          cur += runText(r);
+        }else{
+          if(cur.trim()){
+            raw.push(cur.trim());
+            cur="";
+          }
+        }
+      }
+      if(cur.trim()) raw.push(cur.trim());
+
+      // Merge tiny fragments like "s" / "es" if Word splits runs strangely
+      const merged=[];
+      let frag="";
+      for(const t of raw){
+        if(t.length <= 2){
+          frag += t;
+          continue;
+        }
+        if(frag){
+          merged.push((frag + " " + t).trim());
+          frag="";
+        }else{
+          merged.push(t.trim());
+        }
+      }
+      if(frag) merged.push(frag.trim());
+
+      return merged;
+    }
+
+    // ----------------------------
+    // Fill fields (13.1 only)
+    // ----------------------------
+    function fill13(fields){
+      // We try to map by order (first 8)
+      const list = fields.slice(0, 8);
+      list.forEach((txt, idx)=>{
+        const n = idx + 1;
+        const el = document.querySelector(`[data-fill="${n}"]`);
+        if(el) el.value = txt;
+      });
+      return list.length;
+    }
+
+    // ----------------------------
+    // Grade 13.1
+    // ----------------------------
+    function grade13(){
+      const student = [
+        $("#a1").value,
+        $("#a2").value,
+        $("#a3").value,
+        $("#a4").value,
+        $("#a5").value,
+        $("#a6").value,
+        $("#a7").value,
+        $("#a8").value
+      ];
+
+      const rows = [];
+      let points = 0;
+
+      for(let i=0;i<8;i++){
+        const expected = SOL_13_1[i];
+        const givenRaw = student[i];
+
+        let correct = false;
+
+        if(i === 1){
+          // (b) needs two words: SHORE + BEACH (order doesn't matter)
+          const given = new Set(splitWords(givenRaw));
+          const exp = new Set(expected);
+          correct = [...exp].every(x => given.has(x));
+        }else{
+          correct = normalizeWord(givenRaw) === expected[0];
+        }
+
+        if(correct) points++;
+
+        rows.push({
+          item: String.fromCharCode(97+i), // a,b,c...
+          given: givenRaw || "",
+          expected: expected.join(" + "),
+          correct
+        });
+      }
+
+      return { points, max: 8, rows };
+    }
+
+    function renderResult(res){
+      const dot = $("#dotState");
+      const head = $("#resultHeadline");
+      const chip = $("#scoreChip");
+
+      chip.textContent = `${res.points}/${res.max}`;
+
+      if(res.points === res.max){
+        dot.className = "dot ok";
+        head.textContent = "Alles korrekt ✅";
+        chip.className = "chip good";
+      }else if(res.points === 0){
+        dot.className = "dot no";
+        head.textContent = "Alles falsch ❌";
+        chip.className = "chip bad";
+      }else{
+        dot.className = "dot warn";
+        head.textContent = "Teilweise korrekt.";
+        chip.className = "chip";
+      }
+
+      const html = `
+        <table>
+          <thead>
+            <tr>
+              <th>Teil</th>
+              <th>Schülerantwort</th>
+              <th>Musterlösung</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${res.rows.map(r=>`
+              <tr>
+                <td><b>${r.item})</b></td>
+                <td>${escapeHtml(r.given)}</td>
+                <td><b>${escapeHtml(r.expected)}</b></td>
+                <td>${r.correct ? `<span class="chip good">OK</span>` : `<span class="chip bad">Falsch</span>`}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      `;
+      $("#resultTableWrap").innerHTML = html;
+    }
+
+    function escapeHtml(str){
+      return (str||"").toString()
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;")
+        .replaceAll("'","&#039;");
+    }
+
+    // ----------------------------
+    // PDF generation (jsPDF)
+    // ----------------------------
+    function generatePDF(res){
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit:"pt", format:"a4" });
+
+      const fn = ($("#firstName").value || "").trim();
+      const ln = ($("#lastName").value || "").trim();
+      const nr = ($("#studentNr").value || "").trim();
+
+      const title = "AutoGrader – LEF04 XS05 (MVP 13.1)";
+      doc.setFont("helvetica","bold");
+      doc.setFontSize(16);
+      doc.text(title, 40, 52);
+
+      doc.setFont("helvetica","normal");
+      doc.setFontSize(11);
+      doc.text(`Name: ${ln}`, 40, 80);
+      doc.text(`Vorname: ${fn}`, 40, 98);
+      doc.text(`Studien-Nr.: ${nr}`, 40, 116);
+
+      doc.setFont("helvetica","bold");
+      doc.text(`Ergebnis 13.1: ${res.points}/${res.max} Punkte`, 40, 148);
+
+      let y = 176;
+      doc.setFont("helvetica","bold");
+      doc.text("Details:", 40, y);
+      y += 14;
+
+      doc.setFont("helvetica","normal");
+      res.rows.forEach(r=>{
+        const line = `${r.item}) Schüler: ${r.given || "—"} | Lösung: ${r.expected} | ${r.correct ? "OK" : "Falsch"}`;
+        const lines = doc.splitTextToSize(line, 520);
+        doc.text(lines, 40, y);
+        y += lines.length * 14 + 2;
+        if(y > 760){
+          doc.addPage();
+          y = 60;
+        }
+      });
+
+      const fileName = `LEF04_13-1_${ln || "Name"}_${fn || "Vorname"}.pdf`;
+      doc.save(fileName);
+    }
+
+    // ----------------------------
+    // Button wiring
+    // ----------------------------
+    $("#btnFill").onclick = async () => {
+      const file = $("#docx").files?.[0];
+      if(!file) return alert("Bitte zuerst eine .docx Datei auswählen.");
+      if(!file.name.toLowerCase().endsWith(".docx")) return alert("Bitte eine echte .docx wählen.");
+
+      setStatus("Word wird gelesen…");
+
+      try{
+        const extracted = await extractBlueAnswersFromDocx(file);
+        setDebug({ extractedCount: extracted.length, first20: extracted.slice(0,20) });
+
+        if(!extracted.length){
+          setStatus("❌ 0 blaue Antworten gefunden (siehe Debug).");
+          alert("0 Antworten gefunden. Bitte Debug einschalten und Screenshot senden.");
+          return;
+        }
+
+        const filled = fill13(extracted);
+        setStatus(`✔ Eingezogen: ${filled}/8 (Extrahiert: ${extracted.length})`);
+      }catch(e){
+        console.error(e);
+        setStatus("❌ Fehler beim DOCX lesen: " + (e?.message || e));
+        setDebug(String(e?.stack || e));
+        alert("Fehler beim Lesen. Debug einschalten und Screenshot senden.");
+      }
     };
-    document.getElementById("btnGrade").onclick = () => alert("Schritt 3: Korrektur kommt danach.");
-    document.getElementById("btnPdf").onclick = () => alert("Schritt 4: PDF-Report kommt danach.");
+
+    $("#btnGrade").onclick = () => {
+      const res = grade13();
+      renderResult(res);
+      setStatus(`Korrigiert: ${res.points}/${res.max}`);
+      window.__LAST_RESULT__ = res;
+    };
+
+    $("#btnPDF").onclick = () => {
+      const res = window.__LAST_RESULT__ || grade13();
+      renderResult(res);
+      generatePDF(res);
+      setStatus("PDF erzeugt & Download gestartet");
+    };
+
+    // Init
+    setStatus("bereit (13.1 MVP)");
   </script>
 </body>
 </html>
