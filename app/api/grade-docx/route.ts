@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
-import { gradeDocx } from "../../../grade-docx";
-
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
+    const { gradeDocx } = await import("../../../grade-docx"); // <-- dynamisch
+
     const form = await req.formData();
     const file = form.get("file");
     const assignmentId = String(form.get("assignmentId") || "LEF04");
