@@ -1,118 +1,72 @@
-import JSZip from "jszip";
-import { XMLParser } from "fast-xml-parser";
+export async function extractBlueAnswersFromDocx(file, JSZipLib) {
+  const JSZip = JSZipLib || window.JSZip;
+  if (!JSZip) throw new Error("JSZip nicht gefunden");
 
-export type ExtractedAnswer = {
-  index: number;
-  text: string;
-};
+  const buf = await file.arrayBuffer();
+  const zip = await JSZip.loadAsync(buf);
 
-function toArray<T>(x: T | T[] | undefined | null): T[] {
-  if (!x) return [];
-  return Array.isArray(x) ? x : [x];
-}
+  const docXmlFile = zip.file("word/document.xml");
+  if (!docXmlFile) throw new Error("word/document.xml fehlt – ist das wirklich .docx?");
 
-function getTextFromRun(run: any): string {
-  // Word stores text in <w:t> (can be string, object, or array)
-  const t = run?.["w:t"];
-  if (!t) return "";
+  const xml = await docXmlFile.async("string");
+  const doc = new DOMParser().parseFromString(xml, "text/xml");
 
-  if (typeof t === "string") return t;
+  const runs = [...doc.getElementsByTagName("w:r")];
 
-  if (Array.isArray(t)) {
-    return t
-      .map((v) => (typeof v === "string" ? v : v?.["#text"] ?? ""))
-      .join("");
-  }
+  // echte Hex-Blauwerte
+  const BLUE_HEX = new Set(["0000FF","0070C0","2F75B5","1F4E79","2E74B5","305496"]);
+  // Theme-Blau (Word nutzt oft themeColor="accent1")
+  const BLUE_THEME = new Set(["ACCENT1","ACCENT2","HYPERLINK","FOLLOWEDHYPERLINK"]);
 
-  if (typeof t === "object") {
-    return t?.["#text"] ?? "";
-  }
+  const runText = r => [...r.getElementsByTagName("w:t")].map(x => x.textContent).join("");
 
-  return "";
-}
+  const runIsBlue = (r) => {
+    const rPr = r.getElementsByTagName("w:rPr")[0];
+    if(!rPr) return false;
 
-function runIsBlue(run: any): boolean {
-  const rPr = run?.["w:rPr"];
-  if (!rPr) return false;
+    const color = rPr.getElementsByTagName("w:color")[0];
+    if(!color) return false;
 
-  const color = rPr?.["w:color"];
-  const themeColor = rPr?.["w:color"]?.["@_w:themeColor"] ?? rPr?.["w:color"]?.["@_themeColor"];
+    const val = (color.getAttribute("w:val") || color.getAttribute("val") || "").toUpperCase().replace("#","");
+    const theme = (color.getAttribute("w:themeColor") || color.getAttribute("themeColor") || "").toUpperCase();
 
-  // w:color can look like: { "@_w:val": "3366FF" } or { "@_val": "0000FF" }
-  const raw =
-    typeof color === "string"
-      ? color
-      : color?.["@_w:val"] || color?.["@_val"] || themeColor;
+    if(val && BLUE_HEX.has(val)) return true;
+    if(theme && BLUE_THEME.has(theme)) return true;
 
-  if (!raw) return false;
-
-  const v = String(raw).toUpperCase();
-
-  // Common blues + the one in your sample (e.g. 3366FF).
-  // Add more if your templates use other blues.
-  const BLUE_HEX = new Set(["0000FF", "0070C0", "2F75B5", "1F4E79", "3366FF"]);
-
-  if (BLUE_HEX.has(v)) return true;
-
-  // Sometimes Word uses theme colors like ACCENT1, ACCENT2 etc.
-  if (v.includes("ACCENT")) return true;
-
-  return false;
-}
-
-/**
- * Extracts all blue-colored text segments from a .docx file in reading order.
- * Treats continuous blue runs as one answer; switches to non-blue flushes the answer.
- */
-export async function extractBlueText(fileBuffer: ArrayBuffer): Promise<ExtractedAnswer[]> {
-  const zip = await JSZip.loadAsync(fileBuffer);
-
-  const docXml = await zip.file("word/document.xml")?.async("string");
-  if (!docXml) throw new Error("word/document.xml not found. Is this a .docx file?");
-
-  const parser = new XMLParser({
-    ignoreAttributes: false,
-    attributeNamePrefix: "@_",
-    preserveOrder: false,
-  });
-
-  const doc = parser.parse(docXml);
-
-  const body = doc?.["w:document"]?.["w:body"];
-  if (!body) return [];
-
-  const paragraphs = toArray(body["w:p"]);
-
-  const answers: string[] = [];
-  let collecting = false;
-  let current = "";
-
-  const flush = () => {
-    const cleaned = current.replace(/\u00A0/g, " ").trim();
-    if (cleaned.length > 0) answers.push(cleaned);
-    current = "";
-    collecting = false;
+    return false;
   };
 
-  for (const p of paragraphs) {
-    const runs = toArray(p?.["w:r"]);
+  let raw = [];
+  let cur = "";
 
-    for (const r of runs) {
-      const isBlue = runIsBlue(r);
-      const txt = getTextFromRun(r);
-
-      if (isBlue) {
-        collecting = true;
-        current += txt;
-      } else {
-        // End of a blue segment
-        if (collecting) flush();
+  for(const r of runs){
+    if(runIsBlue(r)){
+      cur += runText(r);
+    } else {
+      if(cur.trim()){
+        raw.push(cur.trim());
+        cur = "";
       }
     }
-
-    // Paragraph boundary also ends an answer
-    if (collecting) flush();
   }
+  if(cur.trim()) raw.push(cur.trim());
 
-  return answers.map((text, i) => ({ index: i + 1, text }));
+  // Merge "s"/"es"/"a"/"b" Split-Fragmente
+  const merged=[];
+  let frag="";
+  for(const t of raw){
+    if(t.length <= 2){
+      frag += t;
+      continue;
+    }
+    if(frag){
+      merged.push((frag + " " + t).trim());
+      frag="";
+    } else {
+      merged.push(t.trim());
+    }
+  }
+  if(frag) merged.push(frag);
+
+  return merged;
 }
