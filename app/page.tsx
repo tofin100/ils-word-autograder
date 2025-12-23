@@ -51,7 +51,7 @@ export default function Home() {
     <main style={{ maxWidth: 1100, margin: "50px auto", padding: 16, fontFamily: "system-ui" }}>
       <h1 style={{ fontSize: 34, fontWeight: 800, marginBottom: 8 }}>ILS Word Auto-Korrektur (MVP)</h1>
       <p style={{ opacity: 0.75, marginBottom: 22 }}>
-        Upload einer <b>.docx</b> Einsendeaufgabe → blaue Antworten werden extrahiert → Abgleich mit Musterlösung.
+        Upload einer <b>.docx</b> Einsendeaufgabe → blaue Antworten extrahieren → Abgleich mit Musterlösung.
       </p>
 
       <div style={{ display: "flex", gap: 12, alignItems: "center", flexWrap: "wrap" }}>
@@ -64,11 +64,7 @@ export default function Home() {
           />
         </label>
 
-        <input
-          type="file"
-          accept=".docx"
-          onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-        />
+        <input type="file" accept=".docx" onChange={(e) => setFile(e.target.files?.[0] ?? null)} />
 
         <button
           onClick={handleGrade}
@@ -118,7 +114,7 @@ export default function Home() {
                     <td style={{ padding: 12 }}>{r.student || <span style={{ opacity: 0.5 }}>—</span>}</td>
                     <td style={{ padding: 12 }}>{r.expected?.join(" | ")}</td>
                     <td style={{ padding: 12, fontWeight: 700 }}>
-                      {r.correct ? (r.reason === "typo" ? "✅ (Tippfehler toleriert)" : "✅ korrekt") : (r.reason === "missing" ? "⚠️ fehlt" : "❌ falsch")}
+                      {r.correct ? (r.reason === "typo" ? "✅ (Tippfehler)" : "✅ korrekt") : (r.reason === "missing" ? "⚠️ fehlt" : "❌ falsch")}
                     </td>
                   </tr>
                 ))}
@@ -127,7 +123,7 @@ export default function Home() {
           </div>
 
           <p style={{ marginTop: 10, opacity: 0.6 }}>
-            Hinweis: Aktuell vergleicht das MVP nur so viele Items, wie in <code>solution-LEF04.json</code> stehen.
+            Der MVP bewertet aktuell nur so viele Items, wie in <code>solution-LEF04.json</code> stehen.
           </p>
         </div>
       )}
