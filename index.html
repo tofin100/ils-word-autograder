@@ -3,198 +3,249 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>ILS Auto-Korrektur (MVP)</title>
+  <title>ILS – Einsendeaufgabe LEF04 XS (Auto-Korrektur)</title>
   <style>
-    :root{--bg:#0b1220;--card:#0f1b34;--muted:#9fb0d0;--txt:#eef3ff;--border:rgba(255,255,255,.12);--ok:#35d07f;--bad:#ff5f6d;--warn:#ffd166}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Arial;background:radial-gradient(1200px 600px at 20% 0%,rgba(66,153,225,.18),transparent 60%),radial-gradient(900px 500px at 80% 10%,rgba(72,187,120,.16),transparent 60%),var(--bg);color:var(--txt)}
-    .wrap{max-width:1100px;margin:48px auto;padding:16px}
-    h1{font-size:32px;margin:0 0 8px 0}
-    .sub{color:var(--muted);margin:0 0 24px 0}
-    .card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));border:1px solid var(--border);border-radius:18px;padding:18px;margin:14px 0}
-    .row{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    :root{
+      --bg:#0b1220; --card:#0f1b34; --txt:#eef3ff; --muted:#9fb0d0;
+      --border:rgba(255,255,255,.12); --accent:#7dd3fc;
+    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:var(--bg);color:var(--txt)}
+    .wrap{max-width:1100px;margin:40px auto;padding:16px}
+    h1{margin:0 0 8px 0;font-size:28px}
+    .sub{margin:0 0 22px 0;color:var(--muted)}
+    .card{background:linear-gradient(180deg,rgba(255,255,255,.06),rgba(255,255,255,.03));
+      border:1px solid var(--border); border-radius:18px; padding:18px; margin:14px 0}
+    .topbar{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .pill{display:inline-block;padding:6px 10px;border-radius:999px;border:1px solid var(--border);color:var(--muted);font-weight:700}
+    .btn{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--txt);
+      padding:10px 14px;border-radius:12px;font-weight:800;cursor:pointer}
+    .btn:hover{background:rgba(255,255,255,.10)}
     input[type="file"]{color:var(--muted)}
-    button{border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--txt);padding:10px 14px;border-radius:12px;font-weight:700;cursor:pointer}
-    button:hover{background:rgba(255,255,255,.10)}
-    button:disabled{opacity:.5;cursor:not-allowed}
-    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .secTitle{display:flex;justify-content:space-between;gap:10px;align-items:flex-end}
+    .secTitle h2{margin:0;font-size:18px}
+    .hint{margin:8px 0 0 0;color:var(--muted);font-size:13px}
+    .grid{display:grid;grid-template-columns:1fr;gap:12px;margin-top:14px}
     @media(min-width:900px){.grid{grid-template-columns:1fr 1fr}}
     .field{display:flex;flex-direction:column;gap:6px}
-    .label{font-weight:700}
-    textarea, input[type="text"]{width:100%;background:rgba(0,0,0,.20);border:1px solid var(--border);color:var(--txt);border-radius:12px;padding:10px 12px;font-size:14px}
-    textarea{min-height:92px;resize:vertical}
-    .hint{font-size:12px;color:var(--muted)}
-    .status{margin-top:10px;font-size:14px;color:var(--muted)}
-    .pill{display:inline-block;padding:4px 10px;border-radius:999px;border:1px solid var(--border);font-weight:700}
-    .ok{color:var(--ok)} .bad{color:var(--bad)} .warn{color:var(--warn)}
-    table{width:100%;border-collapse:collapse;overflow:hidden;border-radius:14px;border:1px solid var(--border)}
-    th,td{padding:10px 12px;border-top:1px solid var(--border);text-align:left}
-    th{background:rgba(0,0,0,.25)}
+    .label{font-weight:800}
+    .meta{font-size:12px;color:var(--muted)}
+    input[type="text"], textarea{
+      width:100%; background:rgba(0,0,0,.22); border:1px solid var(--border);
+      color:var(--txt); border-radius:12px; padding:10px 12px; font-size:14px
+    }
+    textarea{min-height:90px;resize:vertical}
+    .hr{height:1px;background:var(--border);margin:16px 0}
+    .accent{color:var(--accent);font-weight:900}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>ILS Auto-Korrektur (MVP)</h1>
-    <p class="sub">Upload einer Word-Einsendeaufgabe (.docx) → Antworten werden in die Aufgabenfelder gezogen → korrigieren → PDF.</p>
+    <h1>ILS Auto-Korrektur – LEF04 XS</h1>
+    <p class="sub">Alle Aufgaben untereinander. Felder sind leer. Später füllen wir sie per Upload automatisch (blaue Schülerantworten → passende Felder).</p>
 
     <div class="card">
-      <div class="row">
-        <input id="file" type="file" accept=".docx" />
-        <button id="btnFill">1) Aus Word einfüllen</button>
-        <button id="btnGrade" disabled>2) Korrigieren</button>
-        <button id="btnPdf" disabled>3) PDF generieren</button>
+      <div class="topbar">
+        <span class="pill">Schritt 1: Index/Formular</span>
+        <input id="docx" type="file" accept=".docx" />
+        <button class="btn" id="btnFill" type="button">Aus Word einfüllen (später)</button>
+        <button class="btn" id="btnGrade" type="button">Korrigieren (später)</button>
+        <button class="btn" id="btnPdf" type="button">PDF generieren (später)</button>
       </div>
-      <div class="status" id="status">Bereit.</div>
+      <p class="hint">Hinweis: Buttons sind Platzhalter. In Schritt 2 bauen wir die Upload-Logik, die die Felder befüllt.</p>
     </div>
 
+    <!-- 13.1 -->
     <div class="card">
-      <h2 style="margin:0 0 12px 0;font-size:18px">Aufgabenfelder (LEF04 – Start)</h2>
-      <p class="hint">Im MVP mappen wir Antwort #1 → Feld 1, Antwort #2 → Feld 2 usw. (Das verfeinern wir danach pro Aufgabe/Teilaufgabe.)</p>
+      <div class="secTitle">
+        <h2>13.1 – Progress test Lektion 13</h2>
+        <span class="pill">Wörter einsetzen</span>
+      </div>
+      <p class="hint">Wortliste: beach – coast – lake – ocean – pond – sea – shore – bank  [oai_citation:1‡Einsendeaufgaben%20Englisch%20Schriftlich%201%20pdf.docx](sediment://file_000000004c9471f58bf8b9cd51d4c604)</p>
 
-      <div class="grid" id="fields">
+      <div class="grid">
         <div class="field">
-          <div class="label">1) Antwort</div>
-          <input type="text" id="a1" placeholder="Wird aus Word gezogen…" />
+          <div class="label">13.1 (1)</div>
+          <div class="meta">The boys were sitting on the river ___ fishing.</div>
+          <input type="text" data-fill="1" placeholder="Antwort" />
         </div>
         <div class="field">
-          <div class="label">2) Antwort</div>
-          <input type="text" id="a2" placeholder="Wird aus Word gezogen…" />
+          <div class="label">13.1 (2)</div>
+          <div class="meta">She swam to the ___ and lay down on the ___ to regain her strength.</div>
+          <input type="text" data-fill="2" placeholder="Antwort(en)" />
         </div>
         <div class="field">
-          <div class="label">3) Antwort</div>
-          <input type="text" id="a3" placeholder="Wird aus Word gezogen…" />
+          <div class="label">13.1 (3)</div>
+          <div class="meta">He will build a fish ___ in his garden.</div>
+          <input type="text" data-fill="3" placeholder="Antwort" />
         </div>
         <div class="field">
-          <div class="label">4) Antwort</div>
-          <input type="text" id="a4" placeholder="Wird aus Word gezogen…" />
+          <div class="label">13.1 (4)</div>
+          <div class="meta">They have bought a house by the ___.</div>
+          <input type="text" data-fill="4" placeholder="Antwort" />
         </div>
         <div class="field">
-          <div class="label">5) Antwort</div>
-          <input type="text" id="a5" placeholder="Wird aus Word gezogen…" />
+          <div class="label">13.1 (5)</div>
+          <div class="meta">Dover ___ is famous for its white cliffs.</div>
+          <input type="text" data-fill="5" placeholder="Antwort" />
         </div>
         <div class="field">
-          <div class="label">6) Antwort</div>
-          <input type="text" id="a6" placeholder="Wird aus Word gezogen…" />
+          <div class="label">13.1 (6)</div>
+          <div class="meta">In their holidays they always go to lake Constance. (hier steht in der Datei ein Wort)</div>
+          <input type="text" data-fill="6" placeholder="Antwort" />
         </div>
         <div class="field">
-          <div class="label">7) Antwort</div>
-          <input type="text" id="a7" placeholder="Wird aus Word gezogen…" />
+          <div class="label">13.1 (7)</div>
+          <div class="meta">He crossed the ___ in a sailing ship.</div>
+          <input type="text" data-fill="7" placeholder="Antwort" />
         </div>
         <div class="field">
-          <div class="label">8) Antwort</div>
-          <input type="text" id="a8" placeholder="Wird aus Word gezogen…" />
+          <div class="label">13.1 (8)</div>
+          <div class="meta">They were building sandcastles on the ___.</div>
+          <input type="text" data-fill="8" placeholder="Antwort" />
         </div>
       </div>
     </div>
 
-    <div class="card" id="resultCard" style="display:none">
-      <div class="row" style="justify-content:space-between">
-        <h2 style="margin:0;font-size:18px">Korrektur-Ergebnis</h2>
-        <div class="pill" id="sumPill">—</div>
+    <!-- 13.2 -->
+    <div class="card">
+      <div class="secTitle">
+        <h2>13.2 – Past Tense (Rewrite)</h2>
+        <span class="pill">Sätze umschreiben</span>
       </div>
-      <div style="margin-top:12px;overflow:auto">
-        <table>
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Schülerantwort</th>
-              <th>Soll</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody id="tbody"></tbody>
-        </table>
+      <p class="hint">Rewrite the following sentences, putting them in the past tense.  [oai_citation:2‡Einsendeaufgaben%20Englisch%20Schriftlich%201%20pdf.docx](sediment://file_000000004c9471f58bf8b9cd51d4c604)</p>
+
+      <div class="grid">
+        <div class="field">
+          <div class="label">13.2 a)</div>
+          <div class="meta">He never falls when she leads the way.</div>
+          <input type="text" data-fill="9" placeholder="Vergangenheitssatz" />
+        </div>
+        <div class="field">
+          <div class="label">13.2 (weiterer Satz)</div>
+          <div class="meta">She eats a steak and drinks a pint of beer.</div>
+          <input type="text" data-fill="10" placeholder="Vergangenheitssatz" />
+        </div>
+        <div class="field">
+          <div class="label">13.2 (weiterer Satz)</div>
+          <div class="meta">When we come in, she goes out of the room.</div>
+          <input type="text" data-fill="11" placeholder="Vergangenheitssatz" />
+        </div>
+        <div class="field">
+          <div class="label">13.2 (weiterer Satz)</div>
+          <div class="meta">The curtain rises again, the actors appear on stage, bow and file off.</div>
+          <input type="text" data-fill="12" placeholder="Vergangenheitssatz" />
+        </div>
+        <div class="field">
+          <div class="label">13.2 (weiterer Satz)</div>
+          <div class="meta">These boys say that they always listen carefully, but do not understand their teachers.</div>
+          <input type="text" data-fill="13" placeholder="Vergangenheitssatz" />
+        </div>
+        <div class="field">
+          <div class="label">13.2 (weiterer Satz)</div>
+          <div class="meta">If students read their homework carefully, they will find many mistakes themselves.</div>
+          <input type="text" data-fill="14" placeholder="Vergangenheitssatz" />
+        </div>
+      </div>
+    </div>
+
+    <!-- 13.3 -->
+    <div class="card">
+      <div class="secTitle">
+        <h2>13.3 – Translate (Verb + object + to-infinitive)</h2>
+        <span class="pill">Übersetzen</span>
+      </div>
+      <p class="hint">Translate the following sentences, using one of these verbs (advise/allow/persuade/encourage/urge/force/cause/invite/forbid/order/want/warn/remind).  [oai_citation:3‡Einsendeaufgaben%20Englisch%20Schriftlich%201%20pdf.docx](sediment://file_000000004c9471f58bf8b9cd51d4c604)</p>
+
+      <div class="grid">
+        <div class="field"><div class="label">13.3 a)</div><div class="meta">Erlaubten sie Ihnen, Ihr Auto vor ihrem Haus zu parken?</div><textarea data-fill="15" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 b)</div><div class="meta">Es war jedem verboten, in diesen Räumen zu rauchen.</div><textarea data-fill="16" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 c)</div><div class="meta">Der Trainer wollte, dass alle seine Spieler am Konditionstraining teilnehmen.</div><textarea data-fill="17" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 d)</div><div class="meta">Das schlechte Wetter sorgte dafür, dass wir unsere Reise verschieben mussten.</div><textarea data-fill="18" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 e)</div><div class="meta">Der Arzt riet ihr, wegen ihres Fiebers im Haus zu bleiben.</div><textarea data-fill="19" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 f)</div><div class="meta">Der Polizist zwang sie, ihre Koffer zu öffnen.</div><textarea data-fill="20" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 g)</div><div class="meta">Stets ermutigte er mich, mein Studium fortzusetzen.</div><textarea data-fill="21" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 h)</div><div class="meta">Der Manager bat seine Mitarbeiter eindringlich, sich mehr anzustrengen.</div><textarea data-fill="22" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 i)</div><div class="meta">Der Vorstand hat mich eingeladen, einen Bericht über die Gewinne zu geben.</div><textarea data-fill="23" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 j)</div><div class="meta">Zum Schluss hat er sie überzeugt, seinen Vorschlag anzunehmen.</div><textarea data-fill="24" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 k)</div><div class="meta">Der Offizier befahl dem Soldat, auf den Feind zu schießen.</div><textarea data-fill="25" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 l)</div><div class="meta">Ich habe dich oft genug gewarnt, dein Fahrrad abzuschließen.</div><textarea data-fill="26" placeholder="Übersetzung"></textarea></div>
+        <div class="field"><div class="label">13.3 m)</div><div class="meta">Hast du John daran erinnert, das Paket zu verschicken?</div><textarea data-fill="27" placeholder="Übersetzung"></textarea></div>
+      </div>
+    </div>
+
+    <!-- Kurz: 14.1 / 14.2 / 15.1 / 15.2 / 15.3 / 16.1 / 16.2 / 16.3 / 16.4 -->
+    <div class="card">
+      <div class="secTitle">
+        <h2>Weitere Teile (14–16)</h2>
+        <span class="pill">als Felder vorbereitet</span>
+      </div>
+      <p class="hint">Damit die Index-Seite “fertig untereinander” ist, legen wir die restlichen Aufgaben als große Felder an. Fein-Granular (pro Satz) machen wir danach.</p>
+
+      <div class="field">
+        <div class="label">14.1 – Singular/Plural (Antworten)</div>
+        <textarea data-fill="28" placeholder="Alle Antworten zu 14.1 (zeilenweise)"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="label">14.2 – much/many, few/a few, little/a little</div>
+        <textarea data-fill="29" placeholder="Alle Antworten zu 14.2 (zeilenweise)"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="label">15.1 – Verbformen (Multiple Choice / Einsetzen)</div>
+        <textarea data-fill="30" placeholder="Alle Antworten zu 15.1 (zeilenweise)"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="label">15.2 – Translate (Sätze)</div>
+        <textarea data-fill="31" placeholder="Alle Antworten zu 15.2 (zeilenweise)"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="label">15.3 – Essay (ca. 300 Wörter)</div>
+        <textarea data-fill="32" placeholder="Essay-Text der Schülerin"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="label">16.1 – had better / would rather</div>
+        <textarea data-fill="33" placeholder="Alle Antworten zu 16.1 (zeilenweise)"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="label">16.2 – What will you do if ...?</div>
+        <textarea data-fill="34" placeholder="Alle Antworten zu 16.2 (zeilenweise)"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="label">16.3 – What would you do/have done if ...?</div>
+        <textarea data-fill="35" placeholder="Alle Antworten zu 16.3 (zeilenweise)"></textarea>
+      </div>
+
+      <div class="field">
+        <div class="label">16.4 – Translate</div>
+        <textarea data-fill="36" placeholder="Alle Antworten zu 16.4 (zeilenweise)"></textarea>
       </div>
     </div>
   </div>
 
-<script>
-  const $ = (id) => document.getElementById(id);
-
-  const status = (t) => { $("status").textContent = t; };
-
-  let extracted = []; // [{index,text}]
-  let graded = null;  // server response
-
-  function setField(i, val){
-    const el = document.getElementById("a"+i);
-    if(el) el.value = val || "";
-  }
-
-  function collectFields(){
-    const arr = [];
-    for(let i=1;i<=8;i++){
-      arr.push({ index:i, text: document.getElementById("a"+i).value || "" });
+  <script>
+    // Schritt 2: hier kommt später das Mapping aus der Word-Datei rein.
+    // Wir lassen das bewusst schon vorbereitet:
+    function fillFieldsFromExtracted(extractedArray) {
+      // extractedArray = [{ index: 1, text: "..." }, ...]
+      const byIdx = new Map(extractedArray.map(x => [x.index, x.text]));
+      document.querySelectorAll("[data-fill]").forEach(el => {
+        const i = Number(el.getAttribute("data-fill"));
+        if (byIdx.has(i)) el.value = byIdx.get(i);
+      });
     }
-    return arr;
-  }
 
-  async function postForm(url, file){
-    const fd = new FormData();
-    fd.append("file", file);
-    const res = await fetch(url, { method:"POST", body: fd });
-    const json = await res.json().catch(()=>({}));
-    if(!res.ok) throw new Error(json.error || ("HTTP "+res.status));
-    return json;
-  }
-
-  $("btnFill").onclick = async () => {
-    const f = $("file").files?.[0];
-    if(!f){ status("Bitte .docx auswählen."); return; }
-    status("Extrahiere Antworten aus Word…");
-    try{
-      const json = await postForm("/api/extract", f);
-      extracted = json.extracted || [];
-      for(let i=1;i<=8;i++){
-        const hit = extracted.find(x=>x.index===i);
-        setField(i, hit ? hit.text : "");
-      }
-      $("btnGrade").disabled = false;
-      status("Felder wurden befüllt. Du kannst jetzt korrigieren.");
-    }catch(e){
-      status("Fehler: "+e.message);
-    }
-  };
-
-  $("btnGrade").onclick = async () => {
-    const f = $("file").files?.[0];
-    if(!f){ status("Bitte .docx auswählen."); return; }
-    status("Korrigiere…");
-    try{
-      const json = await postForm("/api/grade", f);
-      graded = json;
-      renderResult(json);
-      $("btnPdf").disabled = false;
-      status("Korrektur fertig.");
-    }catch(e){
-      status("Fehler: "+e.message);
-    }
-  };
-
-  function renderResult(json){
-    const rows = json.graded || [];
-    $("resultCard").style.display = "block";
-    $("tbody").innerHTML = rows.map(r=>{
-      const st = r.correct ? (r.reason==="typo" ? "✅ Tippfehler" : "✅ korrekt") : (r.reason==="missing" ? "⚠️ fehlt" : "❌ falsch");
-      const cls = r.correct ? "ok" : (r.reason==="missing" ? "warn" : "bad");
-      return `<tr>
-        <td>${r.index}</td>
-        <td>${escapeHtml(r.student||"")}</td>
-        <td>${escapeHtml((r.expected||[]).join(" | "))}</td>
-        <td class="${cls}"><b>${st}</b></td>
-      </tr>`;
-    }).join("");
-
-    const s = json.summary || {correct:0,wrong:0,missing:0,total:0};
-    $("sumPill").textContent = `${s.correct}✅ / ${s.wrong}❌ / ${s.missing}⚠️ (Total ${s.total})`;
-  }
-
-  function escapeHtml(str){
-    return (str||"").replace(/[&<>"']/g, (m)=>({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;" }[m]));
-  }
-
-  $("btnPdf").onclick = async () => {
-    alert("PDF kommt als nächster Schritt. Erst stabil Extract + Grade live machen.");
-  };
-</script>
+    // Placeholder Buttons:
+    document.getElementById("btnFill").onclick = () => {
+      alert("Schritt 2: Upload/Extraktion kommt als nächstes. Index ist jetzt fertig aufgebaut.");
+    };
+    document.getElementById("btnGrade").onclick = () => alert("Schritt 3: Korrektur kommt danach.");
+    document.getElementById("btnPdf").onclick = () => alert("Schritt 4: PDF-Report kommt danach.");
+  </script>
 </body>
 </html>
